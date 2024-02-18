@@ -192,7 +192,6 @@ const Toolbar = () => {
   };
 
   const handleBrushColorChange = (event) => {
-    console.log("YES", event);
     setBrushColor(event.target.value);
     setIsEraser(false);
   };
@@ -207,9 +206,6 @@ const Toolbar = () => {
     createCanvas();
     setDrawnArray([]);
     setActiveTool("Canvas Cleared");
-    setBrushSize(10);
-    setBrushColor("#000000");
-    setBucketColor("#ffffff");
     setTimeout(() => setActiveTool("Brush"), 2000);
   };
 
@@ -267,8 +263,6 @@ const Toolbar = () => {
           value={brushCurrentColor ?? brushColor}
           data-jscolor={{
             preset: "dark",
-            closeButton: true,
-            closeText: "OK",
           }}
           className={`${Styles.jscolor} ${Styles["color-input"]}`}
           id="brush-color"
@@ -298,8 +292,6 @@ const Toolbar = () => {
           value={bucketColor}
           data-jscolor={{
             preset: "dark",
-            closeButton: true,
-            closeText: "OK",
           }}
           className={`${Styles.jscolor} ${Styles["color-input"]}`}
           id="bucket-color"

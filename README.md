@@ -14,7 +14,7 @@ The Paint Brush Application is a web-based digital art tool developed with Next.
 
 - Install: `npm install`
 - Start: `npm run dev`
-- Build: `npm install`
+- Build: `npm run build`
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

@@ -97,7 +97,7 @@
   height: 10px;
   background: white;
   outline: none;
-  opacity: 0.7;
+  opacity: 1;
   cursor: pointer;
   -webkit-transition: 0.2s;
   transition: opacity 0.2s;
