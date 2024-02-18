@@ -10,6 +10,7 @@ import {
   faTrashAlt,
   faSave,
 } from "@fortawesome/free-solid-svg-icons";
+import Styles from "./Toolbar.module.css";
 
 const Toolbar = () => {
   const canvasRef = useRef(null);
@@ -18,24 +19,49 @@ const Toolbar = () => {
   const [bucketColor, setBucketColor] = useState("#ffffff");
   const [isEraser, setIsEraser] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
+  const [brushCurrentColor, setBrushCurrentColor] = useState(null);
   const [drawnArray, setDrawnArray] = useState([]);
+
+  useEffect(() => {
+    // Load jscolor scripts after the component mounts
+    const script1 = document.createElement("script");
+    script1.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.min.js";
+    script1.async = true;
+    document.body.appendChild(script1);
+
+    const script2 = document.createElement("script");
+    script2.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.js";
+    script2.async = true;
+    document.body.appendChild(script2);
+
+    // Cleanup function to remove the scripts when the component unmounts
+    return () => {
+      document.body.removeChild(script1);
+      document.body.removeChild(script2);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = document.createElement("canvas"); // Create the canvas element
     canvas.id = "canvas";
+    canvas.classList.add(Styles.canvas); // Add class using styles
     const context = canvas.getContext("2d"); // Get the canvas context
     canvasRef.current = { canvas, context }; // Attach the canvas element and context to the ref
   }, []);
 
   const switchToBrush = useCallback(() => {
+    setBrushCurrentColor(null);
     setActiveTool("Brush");
-    setBrushColor(brushColor); // Set brush color to current color
-    setBrushSize(brushSize); // Set brush size to current size
-  }, [brushColor, brushSize]);
+    setBrushColor(brushCurrentColor);
+    setBrushSize(10);
+  }, [brushCurrentColor]);
 
   const handleEraser = () => {
     setIsEraser(true);
     setActiveTool("Eraser");
+    setBrushCurrentColor(brushColor);
     setBrushColor(bucketColor);
     setBrushSize(50);
   };
@@ -59,7 +85,6 @@ const Toolbar = () => {
   const restoreCanvas = useCallback(() => {
     const { context } = canvasRef.current;
     if (context) {
-      console.log("LOOP", context);
       for (let i = 1; i < drawnArray.length; i++) {
         // Initiate path
         context.beginPath();
@@ -79,7 +104,6 @@ const Toolbar = () => {
     }
   }, [bucketColor, drawnArray]);
 
-  console.log("RESTORE ARRAY", drawnArray);
   useEffect(() => {
     createCanvas();
   }, [createCanvas]);
@@ -168,6 +192,7 @@ const Toolbar = () => {
   };
 
   const handleBrushColorChange = (event) => {
+    console.log("YES", event);
     setBrushColor(event.target.value);
     setIsEraser(false);
   };
@@ -182,6 +207,9 @@ const Toolbar = () => {
     createCanvas();
     setDrawnArray([]);
     setActiveTool("Canvas Cleared");
+    setBrushSize(10);
+    setBrushColor("#000000");
+    setBucketColor("#ffffff");
     setTimeout(() => setActiveTool("Brush"), 2000);
   };
 
@@ -219,34 +247,34 @@ const Toolbar = () => {
   };
 
   return (
-    <div className="top-bar">
+    <div className={Styles["top-bar"]}>
       {/* Active Tool */}
-      <div className="active-tool">
+      <div className={Styles["active-tool"]}>
         <span id="active-tool" title="Active Tool">
           {activeTool}
         </span>
       </div>
       {/* Brush */}
-      <div className="brush tool">
+      <div className={`${Styles.brush} ${Styles.tool}`}>
         <FontAwesomeIcon
           onClick={switchToBrush}
-          className="fas"
+          className={`${Styles.fas}`}
           icon={faBrush}
           id="brush"
           title="Brush"
         />
         <input
-          value={brushColor}
+          value={brushCurrentColor ?? brushColor}
           data-jscolor={{
             preset: "dark",
             closeButton: true,
             closeText: "OK",
           }}
-          className="jscolor color-input"
+          className={`${Styles.jscolor} ${Styles["color-input"]}`}
           id="brush-color"
-          onChange={handleBrushColorChange}
+          onInput={handleBrushColorChange}
         />
-        <span className="size" id="brush-size" title="Brush Size">
+        <span className={Styles.size} id="brush-size" title="Brush Size">
           {brushSize}
         </span>
         <input
@@ -254,15 +282,15 @@ const Toolbar = () => {
           min="1"
           max="50"
           value={brushSize}
-          className="slider"
+          className={Styles.slider}
           id="brush-slider"
           onChange={handleBrushSizeChange}
         />
       </div>
       {/* Bucket */}
-      <div className="bucket tool">
+      <div className={`${Styles.bucket} ${Styles.tools}`}>
         <FontAwesomeIcon
-          className="fas"
+          className={`${Styles.fas}`}
           icon={faFillDrip}
           title="Background Color"
         />
@@ -273,65 +301,67 @@ const Toolbar = () => {
             closeButton: true,
             closeText: "OK",
           }}
-          className="jscolor color-input"
+          className={`${Styles.jscolor} ${Styles["color-input"]}`}
           id="bucket-color"
-          onChange={handleBucketColorChange}
+          onInput={handleBucketColorChange}
         />
       </div>
       {/* Eraser */}
-      <div className="tool" onClick={handleEraser}>
-        <FontAwesomeIcon
-          className="fas"
-          icon={faEraser}
-          id="eraser"
-          title="Eraser"
-        />
-      </div>
-      {/* Clear Canvas */}
-      <div className="tool" onClick={handleClearCanvas}>
-        <FontAwesomeIcon
-          className="fas"
-          icon={faUndoAlt}
-          id="clear-canvas"
-          title="Clear"
-        />
-      </div>
-      {/* Save Local Storage */}
-      <div className="tool" onClick={handleSaveStorage}>
-        <FontAwesomeIcon
-          className="fas"
-          icon={faDownload}
-          id="save-storage"
-          title="Save Local Storage"
-        />
-      </div>
-      {/* Load Local Storage */}
-      <div className="tool" onClick={handleLoadStorage}>
-        <FontAwesomeIcon
-          className="fas"
-          icon={faUpload}
-          id="load-storage"
-          title="Load Local Storage"
-        />
-      </div>
-      {/* Clear Local Storage */}
-      <div className="tool" onClick={handleClearStorage}>
-        <FontAwesomeIcon
-          className="fas fa-trash-alt"
-          icon={faTrashAlt}
-          id="clear-storage"
-          title="Clear Local Storage"
-        />
-      </div>
-      {/* Download Image */}
-      <div className="tool" onClick={handleDownload}>
-        <a id="download">
+      <div className={`${Styles.tools}`}>
+        <div onClick={handleEraser}>
           <FontAwesomeIcon
-            className="fas"
-            icon={faSave}
-            title="Save Image File"
+            className={`${Styles.fas}`}
+            icon={faEraser}
+            id="eraser"
+            title="Eraser"
           />
-        </a>
+        </div>
+        {/* Clear Canvas */}
+        <div onClick={handleClearCanvas}>
+          <FontAwesomeIcon
+            className={`${Styles.fas}`}
+            icon={faUndoAlt}
+            id="clear-canvas"
+            title="Clear"
+          />
+        </div>
+        {/* Save Local Storage */}
+        <div onClick={handleSaveStorage}>
+          <FontAwesomeIcon
+            className={`${Styles.fas}`}
+            icon={faDownload}
+            id="save-storage"
+            title="Save Local Storage"
+          />
+        </div>
+        {/* Load Local Storage */}
+        <div onClick={handleLoadStorage}>
+          <FontAwesomeIcon
+            className={`${Styles.fas}`}
+            icon={faUpload}
+            id="load-storage"
+            title="Load Local Storage"
+          />
+        </div>
+        {/* Clear Local Storage */}
+        <div onClick={handleClearStorage}>
+          <FontAwesomeIcon
+            className={`${Styles.fas} ${Styles["fa-trash-alt"]}`}
+            icon={faTrashAlt}
+            id="clear-storage"
+            title="Clear Local Storage"
+          />
+        </div>
+        {/* Download Image */}
+        <div onClick={handleDownload}>
+          <a id="download">
+            <FontAwesomeIcon
+              className={`${Styles.fas}`}
+              icon={faSave}
+              title="Save Image File"
+            />
+          </a>
+        </div>
       </div>
     </div>
   );
